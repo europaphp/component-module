@@ -1,0 +1,26 @@
+{
+  "name": "europaphp/module",
+  "description": "EuropaPHP module component.",
+  "keywords": ["mvc", "view", "controller", "fast", "scalable", "simple", "module", "modular"],
+  "license": "MIT",
+  "authors": [
+    {
+      "name": "Trey Shugart",
+      "email": "treshugart@gmail.com",
+      "homepage": "http://iamtres.com",
+      "role": "Lead Developer"
+    }
+  ],
+  "autoload": {
+    "psr-0": {
+      "Europa": "src"
+    }
+  },
+  "require": {
+    "php": ">=5.4.0, <6.0.0",
+    "europaphp/config": "dev-master",
+    "europaphp/exception": "dev-master",
+    "europaphp/filter": "dev-master",
+    "europaphp/version": "dev-master"
+  }
+}
