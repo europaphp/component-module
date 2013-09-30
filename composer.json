@@ -1,5 +1,5 @@
 {
-  "name": "europaphp/module",
+  "name": "europaphp/component-module",
   "description": "EuropaPHP module component.",
   "keywords": ["mvc", "view", "controller", "fast", "scalable", "simple", "module", "modular"],
   "license": "MIT",
