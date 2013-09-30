@@ -18,9 +18,9 @@
   },
   "require": {
     "php": ">=5.4.0, <6.0.0",
-    "europaphp/config": "dev-master",
-    "europaphp/exception": "dev-master",
-    "europaphp/filter": "dev-master",
-    "europaphp/version": "dev-master"
+    "europaphp/component-config": "dev-master",
+    "europaphp/component-exception": "dev-master",
+    "europaphp/component-filter": "dev-master",
+    "europaphp/component-version": "dev-master"
   }
 }
