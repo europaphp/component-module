@@ -4,6 +4,10 @@ namespace Europa\Module;
 
 interface ModuleInterface
 {
+  public function install();
+
+  public function uninstall();
+
   public function bootstrap(callable $container);
 
   public function ns();

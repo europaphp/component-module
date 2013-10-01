@@ -4,11 +4,13 @@ namespace Europa\Module;
 use Europa\Config;
 use Europa\Filter;
 
-abstract class ModuleAbstract implements ModuleInterface, RouteAwareInterface, ViewScriptAwareInterface
+abstract class ModuleAbstract implements ModuleInterface, AssetAwareInterface, RouteAwareInterface, ViewScriptAwareInterface
 {
   const BOOTSTRAPPER = 'Bootstrapper';
 
   const VERSION = '0.0.0';
+
+  protected $assets = [];
 
   protected $config = [];
 
@@ -39,6 +41,32 @@ abstract class ModuleAbstract implements ModuleInterface, RouteAwareInterface, V
   public function init()
   {
 
+  }
+
+  public function install($docroot)
+  {
+    foreach ($this->assets() as $file) {
+      $file = new File($file);
+      $file->copy($docroot);
+    }
+
+    return $this;
+  }
+
+  public function uninstall($from)
+  {
+    foreach ($this->assets() as $file) {
+      $file = new File($file);
+      $file->copy($docroot);
+    }
+
+    foreach ($this->assets() as $file) {
+      if (is_dir($path = dirname($file))) {
+        $this->removeEmptyDirectories($path);
+      }
+    }
+
+    return $this;
   }
 
   public function bootstrap(callable $container)
@@ -87,6 +115,11 @@ abstract class ModuleAbstract implements ModuleInterface, RouteAwareInterface, V
   public function dependencies()
   {
     return $this->dependencies;
+  }
+
+  public function assets()
+  {
+    return $this->assets;
   }
 
   public function routes()
@@ -152,5 +185,16 @@ abstract class ModuleAbstract implements ModuleInterface, RouteAwareInterface, V
     }
 
     $this->routes = new Config\Config($this->routes);
+  }
+
+  private function removeEmptyDirectories($path)
+  {
+    $empty = true;
+
+    foreach (glob($path . DIRECTORY_SEPARATOR . '*') as $file) {
+       $empty &= is_dir($file) && $this->removeEmptyDirectories($file);
+    }
+
+    return $empty && rmdir($path);
   }
 }
