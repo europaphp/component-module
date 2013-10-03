@@ -8,6 +8,8 @@ interface ModuleInterface
 
   public function uninstall();
 
+  public function installed();
+
   public function bootstrap(callable $container);
 
   public function ns();

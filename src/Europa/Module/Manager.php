@@ -20,19 +20,19 @@ class Manager implements ManagerInterface
     $this->container = $container;
   }
 
-  public function install($path)
+  public function install()
   {
     foreach ($this->modules as $module) {
-      $module->install($path);
+      $module->install();
     }
 
     return $this;
   }
 
-  public function uninstall($path)
+  public function uninstall()
   {
     foreach ($this->modules as $module) {
-      $module->uninstall($path);
+      $module->uninstall();
     }
 
     return $this;

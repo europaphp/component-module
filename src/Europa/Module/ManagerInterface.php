@@ -7,6 +7,10 @@ use IteratorAggregate;
 
 interface ManagerInterface extends Countable, IteratorAggregate
 {
+  public function install();
+
+  public function uninstall();
+
   public function bootstrap();
 
   public function add(ModuleInterface $module);

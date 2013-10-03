@@ -3,6 +3,7 @@
 namespace Europa\Module;
 use Europa\Config;
 use Europa\Filter;
+use Europa\Fs;
 
 abstract class ModuleAbstract implements ModuleInterface, AssetAwareInterface, RouteAwareInterface, ViewScriptAwareInterface
 {
@@ -15,6 +16,10 @@ abstract class ModuleAbstract implements ModuleInterface, AssetAwareInterface, R
   protected $config = [];
 
   protected $dependencies = [];
+
+  protected $installPath;
+
+  protected $installPermissions = 0777;
 
   protected $name;
 
@@ -30,6 +35,7 @@ abstract class ModuleAbstract implements ModuleInterface, AssetAwareInterface, R
 
   public function __construct($config = [])
   {
+    $this->initInstallPath();
     $this->initNamespace();
     $this->initName();
     $this->initPath();
@@ -43,30 +49,62 @@ abstract class ModuleAbstract implements ModuleInterface, AssetAwareInterface, R
 
   }
 
-  public function install($docroot)
+  public function install()
   {
-    foreach ($this->assets() as $file) {
-      $file = new File($file);
-      $file->copy($docroot);
+    foreach ($this->assets() as $asset) {
+      $from = $this->formatFromPath($asset);
+      $to = $this->formatToPath($asset);
+      $path = dirname($to);
+
+      if (!is_dir($path) && !@mkdir($path, $this->installPermissions, true)) {
+        throw new \RuntimeException(sprintf('Unable to create install directory "%s".', $path));
+      }
+
+      if (!is_file($from)) {
+        throw new \UnexpectedValueException(sprintf('Cannot install asset "%s" because it does not exist.', $from));
+      }
+
+      if (!@copy($from, $to)) {
+        throw new \RuntimeException(sprintf('Cannot copy asset file from "%s" to "%s".', $from, $to));
+      }
     }
 
     return $this;
   }
 
-  public function uninstall($from)
+  public function uninstall($cleanup = true)
   {
-    foreach ($this->assets() as $file) {
-      $file = new File($file);
-      $file->copy($docroot);
+    foreach ($this->assets() as $asset) {
+      $asset = $this->formatToPath($asset);
+
+      if (is_file($asset) && !@unlink($asset)) {
+        throw new \RuntimeException(sprintf('Cannot uninstall asset "%s".', $asset));
+      }
     }
 
-    foreach ($this->assets() as $file) {
-      if (is_dir($path = dirname($file))) {
-        $this->removeEmptyDirectories($path);
+    if ($cleanup) {
+      foreach ($this->assets() as $asset) {
+        $path = explode(DIRECTORY_SEPARATOR, $asset)[0];
+        $path = $this->formatToPath($path);
+
+        if (is_dir($path)) {
+          $this->removeEmptyDirectories($path);
+        }
       }
     }
 
     return $this;
+  }
+
+  public function installed()
+  {
+    foreach ($this->assets() as $asset) {
+      if (!is_file($this->formatToPath($asset))) {
+        return false;
+      }
+    }
+
+    return true;
   }
 
   public function bootstrap(callable $container)
@@ -138,6 +176,11 @@ abstract class ModuleAbstract implements ModuleInterface, AssetAwareInterface, R
     return $filter($this->name);
   }
 
+  private function initInstallPath()
+  {
+    $this->installPath = (PHP_SAPI === 'cli' ? getcwd() . DIRECTORY_SEPARATOR : '') . dirname($_SERVER['SCRIPT_FILENAME']);
+  }
+
   private function initNamespace()
   {
     if (!$this->namespace) {
@@ -185,6 +228,16 @@ abstract class ModuleAbstract implements ModuleInterface, AssetAwareInterface, R
     }
 
     $this->routes = new Config\Config($this->routes);
+  }
+
+  private function formatFromPath($from)
+  {
+    return $this->path() . DIRECTORY_SEPARATOR . $from;
+  }
+
+  private function formatTopath($to)
+  {
+    return $this->installPath . DIRECTORY_SEPARATOR . $to;
   }
 
   private function removeEmptyDirectories($path)
